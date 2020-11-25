@@ -7,6 +7,7 @@ using UnityEditor;
 public class ShapeEditor : Editor
 {
     ShapeCreator shapeCreator;
+    SelectionInfo selectionInfo;
     bool needsRepaint;
 
     private void OnSceneGUI()
@@ -46,6 +47,28 @@ public class ShapeEditor : Editor
             Debug.Log(mousePosition);
             needsRepaint = true;
         }
+
+        UpdateMouseOverSelection(mousePosition);
+    }
+
+    void UpdateMouseOverSelection(Vector3 mousePosition)
+    {
+        int mouseOverPointIndex = -1;
+        for (int i = 0; i < shapeCreator.points.Count; i++)
+        {
+            if (Vector3.Distance(mousePosition, shapeCreator.points[i]) < shapeCreator.handleRadius)
+            {
+                mouseOverPointIndex = i;
+                break;
+            }
+        }
+
+        if (mouseOverPointIndex != selectionInfo.pointIndex)
+        {
+            selectionInfo.pointIndex = mouseOverPointIndex;
+            selectionInfo.mouseIsOverPoint = mouseOverPointIndex != -1;
+            needsRepaint = true;
+        }
     }
 
     void Draw()
@@ -55,8 +78,17 @@ public class ShapeEditor : Editor
             Vector3 nextPoint = shapeCreator.points[(i + 1) % shapeCreator.points.Count];
             Handles.color = Color.black;
             Handles.DrawDottedLine(shapeCreator.points[i], nextPoint, 4f);
-            Handles.color = Color.white;
-            Handles.DrawSolidDisc(shapeCreator.points[i], Vector3.up, 0.5f);
+
+            if (i == selectionInfo.pointIndex)
+            {
+                Handles.color = Color.red;
+            }
+            else
+            {
+                Handles.color = Color.white;
+            }
+
+            Handles.DrawSolidDisc(shapeCreator.points[i], Vector3.up, shapeCreator.handleRadius);
         }
         needsRepaint = false;
     }
@@ -64,5 +96,13 @@ public class ShapeEditor : Editor
     private void OnEnable()
     {
         shapeCreator = (ShapeCreator)target;
+        selectionInfo = new SelectionInfo();
+    }
+
+    public class SelectionInfo
+    {
+        public int pointIndex = -1;
+        public bool mouseIsOverPoint;
+        public bool pointIsSelected;
     }
 }
