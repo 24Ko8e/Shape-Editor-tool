@@ -307,7 +307,7 @@ GameObject:
   - component: {fileID: 1628178306}
   - component: {fileID: 1628178305}
   m_Layer: 0
-  m_Name: GameObject
+  m_Name: ShapeEditor
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -329,6 +329,7 @@ MonoBehaviour:
   - {x: 4.8204126, y: 0, z: 4.5523834}
   - {x: -1.2533298, y: 0, z: 8.968157}
   - {x: -4.828259, y: 0, z: 4.113901}
+  - {x: -6.02509, y: 0, z: -2.6139793}
   - {x: 1.6526074, y: 0, z: -5.921237}
   - {x: 7.0879273, y: 0, z: -2.615192}
   handleRadius: 0.5
