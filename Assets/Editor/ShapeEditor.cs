@@ -10,6 +10,46 @@ public class ShapeEditor : Editor
     SelectionInfo selectionInfo;
     bool needsRepaint;
 
+    public override void OnInspectorGUI()
+    {
+        base.OnInspectorGUI();
+        string helpMessage = "Left click to add points.\nShift-left click on point to delete.\nShift-left click on empty space to create new shape";
+        EditorGUILayout.HelpBox(helpMessage, MessageType.Info);
+        int shapeDeleteIndex = -1;
+
+        shapeCreator.showShapesList = EditorGUILayout.Foldout(shapeCreator.showShapesList, "Show Shapes List");
+        if (shapeCreator.showShapesList)
+        {
+            for (int i = 0; i < shapeCreator.shapes.Count; i++)
+            {
+                GUILayout.BeginHorizontal();
+                GUILayout.Label("Shape" + (i + 1));
+                GUI.enabled = i != selectionInfo.selectedShapeIndex;
+                if (GUILayout.Button("Select"))
+                {
+                    selectionInfo.selectedShapeIndex = i;
+                }
+                GUI.enabled = true;
+                if (GUILayout.Button("Delete"))
+                {
+                    shapeDeleteIndex = i;
+                }
+                GUILayout.EndHorizontal();
+            }
+        }
+        if (shapeDeleteIndex != -1)
+        {
+            Undo.RecordObject(shapeCreator, "Delete shape");
+            shapeCreator.shapes.RemoveAt(shapeDeleteIndex);
+            selectionInfo.selectedShapeIndex = Mathf.Clamp(selectionInfo.selectedShapeIndex, 0, shapeCreator.shapes.Count - 1);
+        }
+        if (GUI.changed)
+        {
+            needsRepaint = true;
+            SceneView.RepaintAll();
+        }
+    }
+
     private void OnSceneGUI()
     {
         Event guiEvent = Event.current;
@@ -263,27 +303,36 @@ public class ShapeEditor : Editor
                 Handles.DrawSolidDisc(shapeToDraw.points[i], Vector3.up, shapeCreator.handleRadius);
             }
         }
+        if (needsRepaint)
+        {
+            shapeCreator.UpdateMeshDisplay();
+        }
+
         needsRepaint = false;
     }
 
     private void OnEnable()
     {
+        needsRepaint = true;
         shapeCreator = (ShapeCreator)target;
         selectionInfo = new SelectionInfo();
         Undo.undoRedoPerformed += onUndo;
+        Tools.hidden = true;
     }
 
     private void OnDisable()
     {
         Undo.undoRedoPerformed -= onUndo;
+        Tools.hidden = false;
     }
 
     void onUndo()
     {
-        if (selectionInfo.selectedShapeIndex >= shapeCreator.shapes.Count)
+        if (selectionInfo.selectedShapeIndex >= shapeCreator.shapes.Count || selectionInfo.selectedShapeIndex == -1)
         {
             selectionInfo.selectedShapeIndex = shapeCreator.shapes.Count - 1;
         }
+        needsRepaint = true;
     }
 
     Shape selectedShape { get { return shapeCreator.shapes[selectionInfo.selectedShapeIndex]; } }

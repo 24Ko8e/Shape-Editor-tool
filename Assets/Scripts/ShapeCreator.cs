@@ -4,13 +4,18 @@ using UnityEngine;
 
 public class ShapeCreator : MonoBehaviour
 {
+    public MeshFilter meshFilter;
     [HideInInspector]
     public List<Shape> shapes = new List<Shape>();
-    public float handleRadius = 0.5f;
-}
 
-[System.Serializable]
-public class Shape
-{
-    public List<Vector3> points = new List<Vector3>();
+    [HideInInspector]
+    public bool showShapesList;
+
+    public float handleRadius = 0.5f;
+
+    public void UpdateMeshDisplay()
+    {
+        CompositeShape compositeShape = new CompositeShape(shapes);
+        meshFilter.mesh = compositeShape.GetMesh();
+    }
 }
